@@ -1,6 +1,6 @@
 import { $, $$, updateList } from './dom';
 import { getBoundaries, getViewportBoundaries } from './geometry';
-import { translate } from './animation';
+import { translate, highlight } from './animation';
 
 export class List {
   constructor(container, viewport = document.documentElement) {
@@ -19,6 +19,8 @@ export class List {
   }
 
   _updateList(items) {
+    this._markUpdated(items);
+
     const first = getBoundaries(this.elements);
     updateList(this._container, items, this._createElement);
     const elements = this.elements;
@@ -31,17 +33,38 @@ export class List {
 
   _animateElement(first, last, viewport, element, index, elements) {
     const id = Number(element.dataset.id);
+    const updated = Boolean(element.dataset.updated);
 
     translate(element, first[id], last[id], viewport, index, elements.length);
+
+    highlight(element.querySelector('.content'), updated);
   }
 
   _createElement(item) {
     const element = document.createElement('div');
+    const content = document.createElement('div');
 
-    element.textContent = item.id;
     element.setAttribute('data-id', item.id);
+    item.updated && element.setAttribute('data-updated', true);
     element.classList.add('item');
 
+    content.textContent = item.id;
+    content.classList.add('content');
+
+    element.appendChild(content);
+
     return element;
+  }
+
+  _markUpdated(items) {
+    const prevIndices = this._items.reduce((indices, { id }, index) => {
+      indices[id] = index;
+
+      return indices;
+    }, {});
+
+    items.forEach((item, index) => {
+      item.updated = index < prevIndices[item.id];
+    });
   }
 }

@@ -6,9 +6,12 @@
   box-shadow: 0 0 1px rgba(0,0,0,1);
   font: 6em/var(--height) sans-serif;
   color: rgba(0,0,0,.05);
+  position: relative;
+}
+
+.content {
   padding: 0 .2em;
   background: white;
-  position: relative;
 }
 
 body {

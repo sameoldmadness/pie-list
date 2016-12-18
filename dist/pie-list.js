@@ -62,11 +62,9 @@ function inViewport(item, viewport) {
 
 const transitionEnd = whichTransitionEvent();
 
-function bindTransitionEndHandler(element) {
+function bindTransitionEndHandler(element, cb) {
   const transitionEndHandler = event => {
-    element.style.zIndex = null;
-    element.style.willChange = null;
-    element.style.transition = null;
+    cb(element);
 
     element.removeEventListener(transitionEnd, transitionEndHandler);
   };
@@ -97,8 +95,30 @@ function translate(element, first, last, viewport, index, len) {
       element.style.transform = null;
     });
 
-    bindTransitionEndHandler(element);
+    bindTransitionEndHandler(element, element => {
+      element.style.zIndex = null;
+      element.style.willChange = null;
+      element.style.transition = null;
+    });
   }
+}
+
+function highlight(element, updated) {
+  if (!updated) return;
+
+  element.style.willChange = 'background-color';
+  element.style.transition = null;
+  element.style.backgroundColor = '#fc0';
+
+  requestAnimationFrame(_ => {
+    element.style.transition = 'background-color 5s';
+    element.style.backgroundColor = null;
+  });
+
+  bindTransitionEndHandler(element, element => {
+    element.style.willChange = null;
+    element.style.transition = null;
+  });
 }
 
 class List {
@@ -118,6 +138,8 @@ class List {
   }
 
   _updateList(items) {
+    this._markUpdated(items);
+
     const first = getBoundaries(this.elements);
     updateList(this._container, items, this._createElement);
     const elements = this.elements;
@@ -130,18 +152,39 @@ class List {
 
   _animateElement(first, last, viewport, element, index, elements) {
     const id = Number(element.dataset.id);
+    const updated = Boolean(element.dataset.updated);
 
     translate(element, first[id], last[id], viewport, index, elements.length);
+
+    highlight(element.querySelector('.content'), updated);
   }
 
   _createElement(item) {
     const element = document.createElement('div');
+    const content = document.createElement('div');
 
-    element.textContent = item.id;
     element.setAttribute('data-id', item.id);
+    item.updated && element.setAttribute('data-updated', true);
     element.classList.add('item');
 
+    content.textContent = item.id;
+    content.classList.add('content');
+
+    element.appendChild(content);
+
     return element;
+  }
+
+  _markUpdated(items) {
+    const prevIndices = this._items.reduce((indices, { id }, index) => {
+      indices[id] = index;
+
+      return indices;
+    }, {});
+
+    items.forEach((item, index) => {
+      item.updated = index < prevIndices[item.id];
+    });
   }
 }
 
