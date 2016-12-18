@@ -1,4 +1,19 @@
 import { inViewport } from './geometry';
+import { whichTransitionEvent } from './dom';
+
+const transitionEnd = whichTransitionEvent();
+
+function bindTransitionEndHandler(element) {
+  const transitionEndHandler = event => {
+    element.style.zIndex = null;
+    element.style.willChange = null;
+    element.style.transition = null;
+
+    element.removeEventListener(transitionEnd, transitionEndHandler);
+  };
+
+  element.addEventListener(transitionEnd, transitionEndHandler);
+}
 
 export function translate(element, first, last, viewport, index, len) {
   element.style.zIndex = null;
@@ -22,5 +37,7 @@ export function translate(element, first, last, viewport, index, len) {
       element.style.transition = 'transform 2s';
       element.style.transform = null;
     });
+
+    bindTransitionEndHandler(element);
   }
 }

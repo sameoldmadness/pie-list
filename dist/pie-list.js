@@ -16,6 +16,30 @@ function updateList(list, items, createElement) {
   list.appendChild(fragment);
 }
 
+// Modified from Modernizr
+function whichTransitionEvent() {
+  const transitions = {
+    transition: 'transitionend',
+    OTransition: 'oTransitionEnd',
+    MozTransition: 'transitionend',
+    WebkitTransition: 'webkitTransitionEnd',
+  };
+
+  // If we're running in a browserless environment (eg. SSR), it doesn't apply.
+  // Return a placeholder string, for consistent type return.
+  if (typeof document === 'undefined') return '';
+
+  const el = document.createElement('fakeelement');
+
+  const match = Object.keys(transitions).find(t => (
+    el.style[t] !== undefined
+  ));
+
+  // If no `transition` is found, we must be running in a browser so ancient,
+  // React itself won't run. Return an empty string, for consistent type return
+  return match ? transitions[match] : '';
+}
+
 function getViewportBoundaries(viewport) {
   const { top } = viewport.getBoundingClientRect();
   const { clientHeight: height } = viewport;
@@ -34,6 +58,20 @@ function getBoundaries(items) {
 
 function inViewport(item, viewport) {
   return item.bottom >= viewport.top && item.top <= viewport.bottom;
+}
+
+const transitionEnd = whichTransitionEvent();
+
+function bindTransitionEndHandler(element) {
+  const transitionEndHandler = event => {
+    element.style.zIndex = null;
+    element.style.willChange = null;
+    element.style.transition = null;
+
+    element.removeEventListener(transitionEnd, transitionEndHandler);
+  };
+
+  element.addEventListener(transitionEnd, transitionEndHandler);
 }
 
 function translate(element, first, last, viewport, index, len) {
@@ -58,6 +96,8 @@ function translate(element, first, last, viewport, index, len) {
       element.style.transition = 'transform 2s';
       element.style.transform = null;
     });
+
+    bindTransitionEndHandler(element);
   }
 }
 
