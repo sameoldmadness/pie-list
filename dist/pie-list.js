@@ -36,20 +36,30 @@ function inViewport(item, viewport) {
   return item.bottom >= viewport.top && item.top <= viewport.bottom;
 }
 
-const translate = {
-  invert(element, delta) {
+function translate(element, first, last, viewport, index, len) {
+  element.style.zIndex = null;
+
+  if (!first) return;
+  if (!inViewport(first, viewport)) return;
+
+  const delta = first.top - last.top;
+
+  if (delta) {
+    const maxZIndex = len;
+    const zIndex = maxZIndex - index;
+
+    element.style.zIndex = zIndex;
+
     element.style.willChange = 'transform';
     element.style.transition = null;
     element.style.transform = `translateY(${delta}px)`;
-  },
 
-  play(element) {
-    element.style.transition = 'transform 2s';
-    element.style.transform = null;
-  },
-};
-
-const {invert, play} = translate;
+    requestAnimationFrame(_ => {
+      element.style.transition = 'transform 2s';
+      element.style.transform = null;
+    });
+  }
+}
 
 class List {
   constructor(container, viewport = document.documentElement) {
@@ -70,25 +80,18 @@ class List {
   _updateList(items) {
     const first = getBoundaries(this.elements);
     updateList(this._container, items, this._createElement);
-    const last = getBoundaries(this.elements);
+    const elements = this.elements;
+    const last = getBoundaries(elements);
     const viewport = getViewportBoundaries(this._viewport);
 
-    this.elements.forEach(this._animateElement.bind(this, first, last, viewport));
-    this.elements[0].getBoundingClientRect();
+    elements.forEach(this._animateElement.bind(this, first, last, viewport));
+    elements[0].getBoundingClientRect(); // force recalculate style
   }
 
-  _animateElement(first, last, viewport, element) {
+  _animateElement(first, last, viewport, element, index, elements) {
     const id = Number(element.dataset.id);
 
-    if (!first[id]) return;
-    if (!inViewport(first[id], viewport)) return;
-
-    const delta = first[id].top - last[id].top;
-
-    if (delta) {
-      invert(element, delta);
-      requestAnimationFrame(_ => play(element));
-    }
+    translate(element, first[id], last[id], viewport, index, elements.length);
   }
 
   _createElement(item) {
