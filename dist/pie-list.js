@@ -103,24 +103,6 @@ function translate(element, first, last, viewport, index, len) {
   }
 }
 
-function highlight(element, updated) {
-  if (!updated) return;
-
-  element.style.willChange = 'background-color';
-  element.style.transition = null;
-  element.style.backgroundColor = '#fc0';
-
-  requestAnimationFrame(_ => {
-    element.style.transition = 'background-color 5s';
-    element.style.backgroundColor = null;
-  });
-
-  bindTransitionEndHandler(element, element => {
-    element.style.willChange = null;
-    element.style.transition = null;
-  });
-}
-
 class List {
   constructor(container, viewport = document.documentElement) {
     this._container = container;
@@ -156,7 +138,7 @@ class List {
 
     translate(element, first[id], last[id], viewport, index, elements.length);
 
-    highlight(element.querySelector('.content'), updated);
+    // highlight(element.querySelector('.content'), updated);
   }
 
   _createElement(item) {

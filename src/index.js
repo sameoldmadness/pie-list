@@ -37,7 +37,7 @@ export class List {
 
     translate(element, first[id], last[id], viewport, index, elements.length);
 
-    highlight(element.querySelector('.content'), updated);
+    // highlight(element.querySelector('.content'), updated);
   }
 
   _createElement(item) {
