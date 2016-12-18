@@ -1,0 +1,13 @@
+{
+  "private": true,
+  "dependencies": {
+    "rollup": "^0.37.0",
+    "rollup-watch": "^2.5.0",
+    "surge": "^0.18.0"
+  },
+  "scripts": {
+    "build": "rollup --input src/index.js --output dist/pie-list.js --format iife --name PIE",
+    "watch": "npm run build -- --watch",
+    "deploy": "surge"
+  }
+}
