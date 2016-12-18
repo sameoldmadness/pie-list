@@ -30,4 +30,6 @@ aside button {
   font-size: 2em;
   display: table-cell;
   width: 20%;
+  border: none;
+  background: none;
 }

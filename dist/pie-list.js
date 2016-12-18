@@ -74,6 +74,7 @@ class List {
     const viewport = getViewportBoundaries(this._viewport);
 
     this.elements.forEach(this._animateElement.bind(this, first, last, viewport));
+    this.elements[0].getBoundingClientRect();
   }
 
   _animateElement(first, last, viewport, element) {
